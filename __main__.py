@@ -58,18 +58,21 @@ def run_health_check():
     # run task
     cracker = HashcatCracker(ans['crackerBinaryId'], binaryDownload)
     start = int(time.time())
-    [states, errors] = cracker.run_health_check(ans['attack'], ans['hashlistAlias'])
+    [states, errors] = cracker.run_health_check(
+        ans['attack'], ans['hashlistAlias'])
     end = int(time.time())
 
     # read results
     if os.path.exists("hashlists/health_check.out"):
-        founds = file_get_contents("hashlists/health_check.out").replace("\r\n", "\n").split("\n")
+        founds = file_get_contents(
+            "hashlists/health_check.out").replace("\r\n", "\n").split("\n")
     else:
         founds = []
     if len(states) > 0:
         num_gpus = len(states[0].get_temps())
     else:
-        errors.append("Faild to retrieve one successful cracker state, most likely due to failing.")
+        errors.append(
+            "Faild to retrieve one successful cracker state, most likely due to failing.")
         num_gpus = 0
     query = copy_and_set_token(dict_sendHealthCheck, CONFIG.get_value('token'))
     query['checkId'] = check_id
@@ -109,7 +112,8 @@ def init_logging(args):
     if CONFIG.get_value('debug'):
         log_level = logging.DEBUG
         logging.getLogger("requests").setLevel(logging.DEBUG)
-    logging.basicConfig(level=log_level, format=print_format, datefmt=date_format)
+    logging.basicConfig(
+        level=log_level, format=print_format, datefmt=date_format)
     file_handler = logging.StreamHandler(logfile)
     file_handler.setFormatter(logging.Formatter(log_format))
     logging.getLogger().addHandler(file_handler)
@@ -125,7 +129,8 @@ def init(args):
         for root, dirs, files in os.walk("crackers"):
             for folder in dirs:
                 if folder.isdigit() and os.path.exists("crackers/" + folder + "/hashtopolis.pid"):
-                    logging.info("Cleaning hashcat PID file from crackers/" + folder)
+                    logging.info(
+                        "Cleaning hashcat PID file from crackers/" + folder)
                     os.unlink("crackers/" + folder + "/hashtopolis.pid")
 
     session = Session(requests.Session()).s
@@ -135,7 +140,8 @@ def init(args):
         session.proxies = CONFIG.get_value('proxies')
 
     if CONFIG.get_value('auth-user') and CONFIG.get_value('auth-password'):
-        session.auth = (CONFIG.get_value('auth-user'), CONFIG.get_value('auth-password'))
+        session.auth = (CONFIG.get_value('auth-user'),
+                        CONFIG.get_value('auth-password'))
 
     # connection initialization
     Initialize().run(args)
@@ -198,11 +204,14 @@ def loop():
             continue
         if task_change:  # check if the client version is up-to-date and load the appropriate cracker
             binaryDownload.check_client_version()
-            logging.info("Got cracker binary type " + binaryDownload.get_version()['name'])
+            logging.info("Got cracker binary type " +
+                         binaryDownload.get_version()['name'])
             if binaryDownload.get_version()['name'].lower() == 'hashcat':
-                cracker = HashcatCracker(task.get_task()['crackerId'], binaryDownload)
+                cracker = HashcatCracker(
+                    task.get_task()['crackerId'], binaryDownload)
             else:
-                cracker = GenericCracker(task.get_task()['crackerId'], binaryDownload)
+                cracker = GenericCracker(
+                    task.get_task()['crackerId'], binaryDownload)
         # if it's a task using hashcat brain, we need to load the found hashes
         if task_change and 'useBrain' in task.get_task() and task.get_task()['useBrain'] and not hashlist.load_found(task.get_task()['hashlistId'], task.get_task()['crackerId']):
             task.reset_task()
@@ -231,7 +240,8 @@ def loop():
                 # some error must have occurred on benchmarking
                 continue
             # send result of benchmark
-            query = copy_and_set_token(dict_sendBenchmark, CONFIG.get_value('token'))
+            query = copy_and_set_token(
+                dict_sendBenchmark, CONFIG.get_value('token'))
             query['taskId'] = task.get_task()['taskId']
             query['result'] = result
             query['type'] = task.get_task()['benchType']
@@ -259,7 +269,8 @@ def loop():
 
         # run chunk
         logging.info("Start chunk...")
-        cracker.run_chunk(task.get_task(), chunk.chunk_data(), task.get_preprocessor())
+        cracker.run_chunk(task.get_task(), chunk.chunk_data(),
+                          task.get_preprocessor())
         if cracker.agent_stopped():
             # if the chunk was aborted by a stop from the server, we need to ask for a task again first
             task.reset_task()
@@ -296,15 +307,26 @@ def de_register():
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Hashtopolis Client v' + Initialize.get_version_number(), prog='python3 hashtopolis.zip')
-    parser.add_argument('--de-register', action='store_true', help='client should automatically de-register from server now')
-    parser.add_argument('--version', action='store_true', help='show version information')
-    parser.add_argument('--number-only', action='store_true', help='when using --version show only the number')
-    parser.add_argument('--disable-update', action='store_true', help='disable retrieving auto-updates of the client from the server')
-    parser.add_argument('--debug', '-d', action='store_true', help='enforce debugging output')
-    parser.add_argument('--voucher', type=str, required=False, help='voucher to use to automatically register')
-    parser.add_argument('--url', type=str, required=False, help='URL to Hashtopolis client API')
-    parser.add_argument('--cert', type=str, required=False, help='Client TLS cert bundle for Hashtopolis client API')
+    parser = argparse.ArgumentParser(
+        description='Hashtopolis Client v' + Initialize.get_version_number(), prog='python3 hashtopolis.zip')
+    parser.add_argument('--de-register', action='store_true',
+                        help='client should automatically de-register from server now')
+    parser.add_argument('--version', action='store_true',
+                        help='show version information')
+    parser.add_argument('--number-only', action='store_true',
+                        help='when using --version show only the number')
+    parser.add_argument('--disable-update', action='store_true',
+                        help='disable retrieving auto-updates of the client from the server')
+    parser.add_argument('--debug', '-d', action='store_true',
+                        help='enforce debugging output')
+    parser.add_argument('--voucher', type=str, required=False,
+                        help='voucher to use to automatically register')
+    parser.add_argument('--url', type=str, required=False,
+                        help='URL to Hashtopolis client API')
+    parser.add_argument('--cert', type=str, required=False,
+                        help='Client TLS cert bundle for Hashtopolis client API')
+    parser.add_argument('--auto-de-register', type='store_true',
+                        help='Will deregister the agent when the process ends.')
     args = parser.parse_args()
 
     if args.version:
@@ -321,24 +343,35 @@ if __name__ == "__main__":
         de_register()
         sys.exit(0)
 
+    if args.auto_de_register:
+        def shutdown():
+            session = Session(requests.Session()).s
+            session.headers.update({'User-Agent': Initialize.get_version()})
+            de_register()
+        signal.signal(signal.SIGTERM, shutdown)
+
     try:
         init_logging(args)
 
         # check if there is a lock file and check if this pid is still running hashtopolis
         if os.path.exists("lock.pid") and os.path.isfile("lock.pid"):
             pid = file_get_contents("lock.pid")
-            logging.info("Found existing lock.pid, checking if python process is running...")
+            logging.info(
+                "Found existing lock.pid, checking if python process is running...")
             if psutil.pid_exists(int(pid)):
                 try:
-                    command = psutil.Process(int(pid)).cmdline()[0].replace('\\', '/').split('/')
+                    command = psutil.Process(int(pid)).cmdline()[
+                        0].replace('\\', '/').split('/')
                     print(command)
                     if str.startswith(command[-1], "python"):
-                        logging.fatal("There is already a hashtopolis agent running in this directory!")
+                        logging.fatal(
+                            "There is already a hashtopolis agent running in this directory!")
                         sys.exit(-1)
                 except Exception:
                     # if we fail to determine the cmd line we assume that it's either not running anymore or another process (non-hashtopolis)
                     pass
-            logging.info("Ignoring lock.pid file because PID is not existent anymore or not running python!")
+            logging.info(
+                "Ignoring lock.pid file because PID is not existent anymore or not running python!")
 
         # create lock file
         with open("lock.pid", 'w') as f:
