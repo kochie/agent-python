@@ -29,7 +29,8 @@ class BinaryDownload:
             return
         if os.path.isfile("old.zip"):
             os.unlink("old.zip")  # cleanup old version
-        query = copy_and_set_token(dict_checkVersion, self.config.get_value('token'))
+        query = copy_and_set_token(
+            dict_checkVersion, self.config.get_value('token'))
         query['version'] = Initialize.get_version_number()
         req = JsonRequest(query)
         ans = req.execute()
@@ -57,13 +58,15 @@ class BinaryDownload:
                         logging.info("Update received, restarting client...")
                         if os.path.exists("lock.pid"):
                             os.unlink("lock.pid")
-                        os.execl(sys.executable, sys.executable, "hashtopolis.zip")
+                        os.execl(sys.executable, sys.executable,
+                                 "hashtopolis.zip")
                         exit(0)
 
     def __check_utils(self):
         path = '7zr' + Initialize.get_os_extension()
         if not os.path.isfile(path):
-            query = copy_and_set_token(dict_downloadBinary, self.config.get_value('token'))
+            query = copy_and_set_token(
+                dict_downloadBinary, self.config.get_value('token'))
             query['type'] = '7zr'
             req = JsonRequest(query)
             ans = req.execute()
@@ -80,7 +83,8 @@ class BinaryDownload:
                 os.chmod(path, os.stat(path).st_mode | stat.S_IEXEC)
         path = 'uftpd' + Initialize.get_os_extension()
         if not os.path.isfile(path) and self.config.get_value('multicast'):
-            query = copy_and_set_token(dict_downloadBinary, self.config.get_value('token'))
+            query = copy_and_set_token(
+                dict_downloadBinary, self.config.get_value('token'))
             query['type'] = 'uftpd'
             req = JsonRequest(query)
             ans = req.execute()
@@ -103,7 +107,8 @@ class BinaryDownload:
             logging.debug("PRINCE is already downloaded")
             return True
         logging.debug("PRINCE not found, download...")
-        query = copy_and_set_token(dict_downloadBinary, self.config.get_value('token'))
+        query = copy_and_set_token(
+            dict_downloadBinary, self.config.get_value('token'))
         query['type'] = 'prince'
         req = JsonRequest(query)
         ans = req.execute()
@@ -121,10 +126,13 @@ class BinaryDownload:
                 sleep(5)
                 return False
             if Initialize.get_os() == 1:
-                os.system("7zr" + Initialize.get_os_extension() + " x -otemp prince.7z")
+                os.system("7zr" + Initialize.get_os_extension() +
+                          " x -otemp prince.7z")
             else:
-                os.system("./7zr" + Initialize.get_os_extension() + " x -otemp prince.7z")
-            for name in os.listdir("temp"):  # this part needs to be done because it is compressed with the main subfolder of prince
+                os.system("./7zr" + Initialize.get_os_extension() +
+                          " x -otemp prince.7z")
+            # this part needs to be done because it is compressed with the main subfolder of prince
+            for name in os.listdir("temp"):
                 if os.path.isdir("temp/" + name):
                     os.rename("temp/" + name, "prince")
                     break
@@ -132,11 +140,12 @@ class BinaryDownload:
             os.rmdir("temp")
             logging.debug("PRINCE downloaded and extracted")
         return True
-    
+
     def check_preprocessor(self, task):
         logging.debug("Checking if requested preprocessor is present...")
         path = "preprocessor/" + str(task.get_task()['preprocessor']) + "/"
-        query = copy_and_set_token(dict_downloadBinary, self.config.get_value('token'))
+        query = copy_and_set_token(
+            dict_downloadBinary, self.config.get_value('token'))
         query['type'] = 'preprocessor'
         query['preprocessorId'] = task.get_task()['preprocessor']
         req = JsonRequest(query)
@@ -160,10 +169,13 @@ class BinaryDownload:
                 sleep(5)
                 return False
             if Initialize.get_os() == 1:
-                os.system("7zr" + Initialize.get_os_extension() + " x -otemp temp.7z")
+                os.system("7zr" + Initialize.get_os_extension() +
+                          " x -otemp temp.7z")
             else:
-                os.system("./7zr" + Initialize.get_os_extension() + " x -otemp temp.7z")
-            for name in os.listdir("temp"):  # this part needs to be done because it is compressed with the main subfolder of prince
+                os.system("./7zr" + Initialize.get_os_extension() +
+                          " x -otemp temp.7z")
+            # this part needs to be done because it is compressed with the main subfolder of prince
+            for name in os.listdir("temp"):
                 if os.path.isdir("temp/" + name):
                     os.rename("temp/" + name, path)
                     break
@@ -174,7 +186,8 @@ class BinaryDownload:
 
     def check_version(self, cracker_id):
         path = "crackers/" + str(cracker_id) + "/"
-        query = copy_and_set_token(dict_downloadBinary, self.config.get_value('token'))
+        query = copy_and_set_token(
+            dict_downloadBinary, self.config.get_value('token'))
         query['type'] = 'cracker'
         query['binaryVersionId'] = cracker_id
         req = JsonRequest(query)
@@ -195,15 +208,21 @@ class BinaryDownload:
                     logging.error("Download of cracker binary failed!")
                     sleep(5)
                     return False
+                os.makedirs("crackers/temp")
+                os.makedirs(f"crackers/{cracker_id}")
                 if Initialize.get_os() == 1:
-                    os.system("7zr" + Initialize.get_os_extension() + " x -ocrackers/temp crackers/" + str(cracker_id) + ".7z")
+                    os.system("7zr" + Initialize.get_os_extension() +
+                              " x -ocrackers/temp crackers/" + str(cracker_id) + ".7z")
                 else:
-                    os.system("./7zr" + Initialize.get_os_extension() + " x -ocrackers/temp crackers/" + str(cracker_id) + ".7z")
+                    os.system("./7zr" + Initialize.get_os_extension() +
+                              " x -ocrackers/temp crackers/" + str(cracker_id) + ".7z")
                 os.unlink("crackers/" + str(cracker_id) + ".7z")
                 for name in os.listdir("crackers/temp"):
                     if os.path.isdir("crackers/temp/" + name):
-                        os.rename("crackers/temp/" + name, "crackers/" + str(cracker_id))
+                        os.rename("crackers/temp/" + name,
+                                  "crackers/" + str(cracker_id))
                     else:
-                        os.rename("crackers/temp", "crackers/" + str(cracker_id))
+                        os.rename("crackers/temp",
+                                  "crackers/" + str(cracker_id))
                         break
         return True
