@@ -109,9 +109,14 @@ def init_logging(args):
     CONFIG = Config()
     if args.debug:
         CONFIG.set_value('debug', True)
+    if args.quiet:
+        CONFIG.set_value('quiet', True)
     if CONFIG.get_value('debug'):
         log_level = logging.DEBUG
         logging.getLogger("requests").setLevel(logging.DEBUG)
+    elif CONFIG.get_value('quiet'):
+        # logging.error("GOING DARK")
+        log_level = logging.WARNING
     logging.basicConfig(
         level=log_level, format=print_format, datefmt=date_format)
     file_handler = logging.StreamHandler(logfile)
@@ -325,8 +330,12 @@ if __name__ == "__main__":
                         help='URL to Hashtopolis client API')
     parser.add_argument('--cert', type=str, required=False,
                         help='Client TLS cert bundle for Hashtopolis client API')
-    parser.add_argument('--auto-de-register', type='store_true',
+    parser.add_argument('--auto-de-register', action='store_true',
                         help='Will deregister the agent when the process ends.')
+    parser.add_argument('--quiet', action="store_true",
+                        help="output to stdout won't include loop status")
+    parser.add_argument('--container', action='store_true',
+                        help='Agent will run in container mode')
     args = parser.parse_args()
 
     if args.version:
@@ -343,16 +352,23 @@ if __name__ == "__main__":
         de_register()
         sys.exit(0)
 
+    init_logging(args)
+
     if args.auto_de_register:
-        def shutdown():
+
+        def shutdown(signum, frame):
+            logging.info("SIGTERM detected, de-registering...")
             session = Session(requests.Session()).s
             session.headers.update({'User-Agent': Initialize.get_version()})
             de_register()
+            sys.stdout.flush()
+            sys.exit(0)
+
+        signal.signal(signal.SIGINT, shutdown)
         signal.signal(signal.SIGTERM, shutdown)
+        logging.info("Signal listener latched")
 
     try:
-        init_logging(args)
-
         # check if there is a lock file and check if this pid is still running hashtopolis
         if os.path.exists("lock.pid") and os.path.isfile("lock.pid"):
             pid = file_get_contents("lock.pid")

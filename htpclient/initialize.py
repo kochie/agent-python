@@ -33,7 +33,8 @@ class Initialize:
             return dict_os[operating_system]
         except KeyError:
             logging.debug("OS: %s" % operating_system)
-            log_error_and_exit("It seems your operating system is not supported.")
+            log_error_and_exit(
+                "It seems your operating system is not supported.")
 
     @staticmethod
     def get_os_extension():
@@ -56,8 +57,10 @@ class Initialize:
         else:
             logging.info("Login successful!")
             if 'server-version' in ans:
-                logging.info("Hashtopolis Server version: " + ans['server-version'])
-            if 'multicastEnabled' in ans and ans['multicastEnabled'] and self.get_os() == 0:  # currently only allow linux
+                logging.info("Hashtopolis Server version: " +
+                             ans['server-version'])
+            # currently only allow linux
+            if 'multicastEnabled' in ans and ans['multicastEnabled'] and self.get_os() == 0:
                 logging.info("Multicast enabled!")
                 self.config.set_value('multicast', True)
                 if not os.path.isdir("multicast"):
@@ -72,7 +75,8 @@ class Initialize:
         devices = []
         if Initialize.get_os() == 0:  # linux
             output = subprocess.check_output("cat /proc/cpuinfo", shell=True)
-            output = output.decode(encoding='utf-8').replace("\r\n", "\n").split("\n")
+            output = output.decode(
+                encoding='utf-8').replace("\r\n", "\n").split("\n")
             tmp = []
             for line in output:
                 line = line.strip()
@@ -90,11 +94,13 @@ class Initialize:
             for line in sorted(set(pairs)):
                 devices.append(line.split(':', 1)[1].replace('\t', ' '))
             try:
-                output = subprocess.check_output("lspci | grep -E 'VGA compatible controller|3D controller'", shell=True)
+                output = subprocess.check_output(
+                    "lspci | grep -E 'VGA compatible controller|3D controller'", shell=True)
             except subprocess.CalledProcessError:
                 # we silently ignore this case on machines where lspci is not present or architecture has no pci bus
                 output = b""
-            output = output.decode(encoding='utf-8').replace("\r\n", "\n").split("\n")
+            output = output.decode(
+                encoding='utf-8').replace("\r\n", "\n").split("\n")
             for line in output:
                 if not line:
                     continue
@@ -103,14 +109,17 @@ class Initialize:
 
         elif Initialize.get_os() == 1:  # windows
             output = subprocess.check_output("wmic cpu get name", shell=True)
-            output = output.decode(encoding='utf-8').replace("\r\n", "\n").split("\n")
+            output = output.decode(
+                encoding='utf-8').replace("\r\n", "\n").split("\n")
             for line in output:
                 line = line.rstrip("\r\n ")
                 if line == "Name" or not line:
                     continue
                 devices.append(line)
-            output = subprocess.check_output("wmic path win32_VideoController get name", shell=True)
-            output = output.decode(encoding='utf-8').replace("\r\n", "\n").split("\n")
+            output = subprocess.check_output(
+                "wmic path win32_VideoController get name", shell=True)
+            output = output.decode(
+                encoding='utf-8').replace("\r\n", "\n").split("\n")
             for line in output:
                 line = line.rstrip("\r\n ")
                 if line == "Name" or not line:
@@ -118,8 +127,10 @@ class Initialize:
                 devices.append(line)
 
         else:  # OS X
-            output = subprocess.check_output("system_profiler SPDisplaysDataType -detaillevel mini", shell=True)
-            output = output.decode(encoding='utf-8').replace("\r\n", "\n").split("\n")
+            output = subprocess.check_output(
+                "system_profiler SPDisplaysDataType -detaillevel mini", shell=True)
+            output = output.decode(
+                encoding='utf-8').replace("\r\n", "\n").split("\n")
             for line in output:
                 line = line.rstrip("\r\n ")
                 if "Chipset Model" not in line:
@@ -127,7 +138,8 @@ class Initialize:
                 line = line.split(":")
                 devices.append(line[1].strip())
 
-        query = copy_and_set_token(dict_updateInformation, self.config.get_value('token'))
+        query = copy_and_set_token(
+            dict_updateInformation, self.config.get_value('token'))
         query['uid'] = self.config.get_value('uuid')
         query['os'] = self.get_os()
         query['devices'] = devices
@@ -149,8 +161,11 @@ class Initialize:
                 voucher = self.config.get_value('voucher')
             elif args.voucher:
                 voucher = args.voucher
+            elif "HASHTOPOLIS_VOUCHER" in os.environ:
+                voucher = os.environ["HASHTOPOLIS_VOUCHER"]
             else:
-                voucher = input("No token found! Please enter a voucher to register your agent:\n").strip()
+                voucher = input(
+                    "No token found! Please enter a voucher to register your agent:\n").strip()
             name = platform.node()
             query = dict_register.copy()
             query['voucher'] = voucher
@@ -176,7 +191,7 @@ class Initialize:
                 cert = os.path.abspath(args.cert)
                 logging.debug("Setting cert to: " + cert)
                 self.config.set_value('cert', cert)
-                
+
         if cert is not None:
             Session().s.cert = cert
             logging.debug("Configuration session cert to: " + cert)
@@ -184,10 +199,13 @@ class Initialize:
     def __check_url(self, args):
         if not self.config.get_value('url'):
             # ask for url
-            if args.url is None:
-                url = input("Please enter the url to the API of your Hashtopolis installation:\n").strip()
-            else:
+            if args.url:
                 url = args.url
+            if "HASHTOPOLIS_SERVER_URL" in os.environ:
+                url = os.environ["HASHTOPOLIS_SERVER_URL"]
+            else:
+                url = input(
+                    "Please enter the url to the API of your Hashtopolis installation:\n").strip()
             logging.debug("Setting url to: " + url)
             self.config.set_value('url', url)
         else:

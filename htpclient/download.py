@@ -22,7 +22,8 @@ class Download:
                 head = session.head(url)
                 # not sure if we only should allow 200/301/302, but then it's present for sure
                 if head.status_code not in [200, 301, 302]:
-                    logging.error("File download header reported wrong status code: " + str(head.status_code))
+                    logging.error(
+                        "File download header reported wrong status code: " + str(head.status_code))
                     return False
 
             with open(output, "wb") as file:
@@ -38,16 +39,18 @@ class Download:
                         dl += len(data)
                         file.write(data)
                         done = int(50 * dl / total_length)
-                        sys.stdout.write("\rDownloading: [%s%s]" % ('=' * done, ' ' * (50 - done)))
+                        sys.stdout.write(
+                            f"\rDownloading: [{'='*done}{' '*(50-done)}]")
                         sys.stdout.flush()
-            sys.stdout.write("\n")
+                    sys.stdout.write("\r\n")
+                    sys.stdout.flush()
             return True
         except requests.exceptions.ConnectionError as e:
             logging.error("Download error: " + str(e))
             sleep(30)
             return False
 
-    @staticmethod
+    @ staticmethod
     def rsync(remote_path, local_path):
         logging.info('getting file "%s" via rsync' % local_path.split('/')[-1])
         os.system('rsync -avzP --partial %s %s' % (remote_path, local_path))

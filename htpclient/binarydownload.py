@@ -79,6 +79,7 @@ class BinaryDownload:
                 sleep(5)
                 self.__check_utils()
             else:
+                print(ans['executable'])
                 Download.download(ans['executable'], path)
                 os.chmod(path, os.stat(path).st_mode | stat.S_IEXEC)
         path = 'uftpd' + Initialize.get_os_extension()
@@ -204,25 +205,27 @@ class BinaryDownload:
             self.last_version = ans
             if not os.path.isdir(path):
                 # we need to download the 7zip
-                if not Download.download(ans['url'], "crackers/" + str(cracker_id) + ".7z"):
+                if not Download.download(ans['url'], f"crackers/{cracker_id}.7z"):
                     logging.error("Download of cracker binary failed!")
                     sleep(5)
                     return False
                 os.makedirs("crackers/temp")
                 os.makedirs(f"crackers/{cracker_id}")
+                ext = Initialize.get_os_extension()
                 if Initialize.get_os() == 1:
-                    os.system("7zr" + Initialize.get_os_extension() +
-                              " x -ocrackers/temp crackers/" + str(cracker_id) + ".7z")
+                    os.system(
+                        f"7zr{ext} x -ocrackers/temp crackers/{cracker_id}.7z")
                 else:
-                    os.system("./7zr" + Initialize.get_os_extension() +
-                              " x -ocrackers/temp crackers/" + str(cracker_id) + ".7z")
-                os.unlink("crackers/" + str(cracker_id) + ".7z")
+                    os.system(
+                        f"./7zr{ext} x -ocrackers/temp crackers/{cracker_id}.7z")
+                os.unlink(f"crackers/{cracker_id}.7z")
                 for name in os.listdir("crackers/temp"):
-                    if os.path.isdir("crackers/temp/" + name):
-                        os.rename("crackers/temp/" + name,
-                                  "crackers/" + str(cracker_id))
+                    if os.path.isdir(f"crackers/temp/{name}"):
+                        os.rename(f"crackers/temp/{name}",
+                                  f"crackers/{cracker_id}")
+                        break
                     else:
                         os.rename("crackers/temp",
-                                  "crackers/" + str(cracker_id))
+                                  f"crackers/{cracker_id}")
                         break
         return True
