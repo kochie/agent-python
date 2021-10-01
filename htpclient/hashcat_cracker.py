@@ -89,7 +89,7 @@ class HashcatCracker:
         args += " --outfile-check-timer=" + str(task['statustimer'])
         args += " --outfile-check-dir=../../hashlist_" + str(task['hashlistId'])
         args += " -o ../../hashlists/" + str(task['hashlistId']) + ".out --outfile-format=" + self.get_outfile_format()
-        args += " -p \\t"
+        args += " -p \"\t\""
         args += " -s " + str(chunk['skip'])
         args += " -l " + str(chunk['length'])
         # when using brain we set the according parameters
@@ -120,7 +120,7 @@ class HashcatCracker:
         post_args += " --outfile-check-timer=" + str(task['statustimer'])
         post_args += " --outfile-check-dir=../../hashlist_" + str(task['hashlistId'])
         post_args += " -o ../../hashlists/" + str(task['hashlistId']) + ".out --outfile-format=" + self.get_outfile_format()
-        post_args += " -p \\t"
+        post_args += " -p \"\t\""
         post_args += " --remove-timer=" + str(task['statustimer'])
         post_args += " ../../hashlists/" + str(task['hashlistId'])
         return self.callPath + pre_args + " | " + self.callPath + post_args + task['cmdpars']
@@ -141,7 +141,7 @@ class HashcatCracker:
         post_args += " --outfile-check-timer=" + str(task['statustimer'])
         post_args += " --outfile-check-dir=../../hashlist_" + str(task['hashlistId'])
         post_args += " -o ../../hashlists/" + str(task['hashlistId']) + ".out --outfile-format=" + self.get_outfile_format()
-        post_args += " -p \\t"
+        post_args += " -p \"\t\""
         post_args += " --remove-timer=" + str(task['statustimer'])
         post_args += " ../../hashlists/" + str(task['hashlistId'])
         post_args += get_rules_and_hl(update_files(
@@ -177,7 +177,7 @@ class HashcatCracker:
         post_args += " --outfile-check-timer=" + str(task['statustimer'])
         post_args += " --outfile-check-dir=../../hashlist_" + str(task['hashlistId'])
         post_args += " -o ../../hashlists/" + str(task['hashlistId']) + ".out --outfile-format=" + self.get_outfile_format()
-        post_args += " -p \\t"
+        post_args += " -p \"\t\""
         post_args += " --remove-timer=" + str(task['statustimer'])
         post_args += " ../../hashlists/" + str(task['hashlistId'])
         post_args += update_files(task['attackcmd']
@@ -535,7 +535,7 @@ class HashcatCracker:
 
         args = " --machine-readable --quiet --runtime=" + str(task['bench'])
         args += " --restore-disable --potfile-disable --session=hashtopolis"
-        args += " -p \\t"
+        args += " -p \"\t\""
         args += update_files(task['attackcmd']).replace(task['hashlistAlias'], "../../hashlists/" + str(task['hashlistId'])) + ' ' + task['cmdpars']
         args += " -o ../../hashlists/" + str(task['hashlistId']) + ".out"
         full_cmd = self.callPath + args
@@ -587,7 +587,7 @@ class HashcatCracker:
     def run_speed_benchmark(self, task):
         args = " --machine-readable --quiet --progress-only"
         args += " --restore-disable --potfile-disable --session=hashtopolis"
-        args += " -p \\t"
+        args += " -p \"\t\""
         
         if 'usePrince' in task and task['usePrince']:
             args += get_rules_and_hl(update_files(task['attackcmd']), task['hashlistAlias']).replace(
